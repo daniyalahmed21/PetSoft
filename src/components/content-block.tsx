@@ -1,0 +1,6 @@
+const ContentBlock = ({ children }: { children: React.ReactNode }) => {
+    return <div className="p-3 w-full h-full bg-white rounded-md shadow-md">{children}</div>;
+  };
+  
+  export default ContentBlock;
+  
