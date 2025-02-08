@@ -1,22 +1,16 @@
-import React from "react";
+import React, { useContext } from "react";
 import Image from "next/image";
 import PetPlaceholder from "../../public/pet-placeholder.png";
+import { Pet } from "@/lib/types";
+import {PetContext} from "../context/pets-context-provider";
 
-type Pet = {
-  id: string;
-  name: string;
-  ownerName: string;
-  imageUrl: string;
-  age: number;
-  notes: string;
-};
 
 type PetListProps = {
   pets: Pet[];
 };
 
-const PetList: React.FC<PetListProps> = ({ pets }) => {
-  console.log(pets);
+const PetList = () => {  /*{ pets }: PetListProps Alternative Without React.FC*/
+  const pets = useContext(PetContext);
 
   return (
     <ul className="bg-white border-b border-light">

@@ -4,17 +4,8 @@ import PetDetails from "@/components/pet-details";
 import PetList from "@/components/pet-list";
 import SearchForm from "@/components/search-form";
 import Stats from "@/components/stats";
-import { error } from "console";
-import React from "react";
 
-const page = async() => {
-  let res = await fetch("https://bytegrad.com/course-assets/projects/petsoft/api/pets.com")
-  
-  if(!res.ok){
-    throw new Error(`Response status: ${res.status}`)
-  }
-
-  const data = await res.json()
+const page = () => {
 
   return (
     <main >
@@ -29,7 +20,7 @@ const page = async() => {
 
         <div className="md:row-start-2 md:row-span-full md:col-start-1 md:col-span-1">
           <ContentBlock>
-            <PetList pets={data}/>
+            <PetList />
           </ContentBlock>
         </div>
 
