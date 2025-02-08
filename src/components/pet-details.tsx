@@ -1,9 +1,10 @@
 "use client";
-import { usePetContext } from "@/lib/hooks";
+import { usePetContext, useSearchContext } from "@/lib/hooks";
 import Image from "next/image";
 
 const PetDetails = () => {
   const { selectedPet } = usePetContext();
+  
   return (
     <section className="flex flex-col h-full w-full">
       {!selectedPet ? (
