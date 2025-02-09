@@ -18,7 +18,7 @@ const AppHeader = () => {
     },
   ];
   return (
-    <header className="pt-4 pb-4  flex justify-between items-center border-b border-white/20">
+    <header className="pt-4 pb-4 px-4 flex justify-between items-center border-b border-white/20">
       <Logo />
       <ul className="flex gap-2 text-sm">
         {routes.map((route, index) => (

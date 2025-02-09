@@ -4,6 +4,7 @@ import Image from "next/image";
 import PetPlaceholder from "../../public/pet-placeholder.png";
 import {usePetContext, useSearchContext}  from "@/lib/hooks";
 import { cn } from "@/lib/utils";
+import PetButton from "./pet-button";
 
 
 
@@ -27,7 +28,10 @@ const PetList = () => {
             />
             <p className="font-semibold">{pet.name}</p>
           </button>
+          
+
         </li>
+       
       ))}
     </ul>
   );

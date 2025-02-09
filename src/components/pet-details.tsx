@@ -1,10 +1,11 @@
 "use client";
 import { usePetContext, useSearchContext } from "@/lib/hooks";
 import Image from "next/image";
+import PetButton from "./pet-button";
 
 const PetDetails = () => {
-  const { selectedPet } = usePetContext();
-  
+  const { selectedPet,handlePetCheckout } = usePetContext();
+
   return (
     <section className="flex flex-col h-full w-full">
       {!selectedPet ? (
@@ -13,28 +14,24 @@ const PetDetails = () => {
         </p>
       ) : (
         <>
-          <div className="flex items-center bg-white px-8 py-5 border-b border-light">
+          <div className="flex items-center bg-white px-8 py-5 border border-light">
             <Image
-              src={selectedPet?.imageUrl}
+             src={selectedPet?.imageUrl || "https://bytegrad.com/course-assets/react-nextjs/pet-placeholder.png"}
+
               alt="Selected pet image"
               height={75}
               width={75}
-              className="h-[65px] w-[65px] rounded-full object-cover"
+              className="h-[58px] w-[58px] md:h-[65px] md:w-[65px] rounded-full object-cover"
             />
 
-            <h2 className="text-2xl font-semibold leading-7 ml-5">
+            <h2 className="text-xl md:text-2xl font-semibold leading-7 ml-3 md:ml-5">
               {selectedPet?.name}
             </h2>
 
-            {/* <div className="ml-auto space-x-2">
-        <PetButton actionType="edit">Edit</PetButton>
-        <PetButton
-          actionType="checkout"
-          onClick={async () => await handleCheckoutPet(pet.id)}
-        >
-          Checkout
-        </PetButton>
-      </div> */}
+            <div className="flex flex-col gap-2 md:flex-row ml-auto ">
+              <PetButton actionType="edit">Edit</PetButton>
+              <PetButton actionType="checkout" onClick={()=>handlePetCheckout(selectedPet.id)}>Checkout</PetButton>
+            </div>
           </div>
           <div className="flex justify-around py-10 px-5 text-center">
             <div>
