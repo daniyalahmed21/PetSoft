@@ -1,4 +1,5 @@
 "use client";
+import { AddPet } from "@/app/actions/actions";
 import { Pet } from "@/lib/types";
 import React, { createContext, useState } from "react";
 
@@ -16,12 +17,12 @@ type TPetContext = {
 export const PetContext = createContext<TPetContext | null>(null);
 
 type PetContextProviderProps = {
-  data: Pet[];
+  data : Pet[];
   children: React.ReactNode;
 };
 
-const PetContextProvider = ({ data, children }: PetContextProviderProps) => {
-  const [pets, setPets] = useState<Pet[]>(data);
+const PetContextProvider = ({ data :pets, children }: PetContextProviderProps) => {
+  // const [pets, setPets] = useState<Pet[]>(data);
   const [selectedPetId, setSelectedPetId] = useState<string | null>(null);
 
   const selectedPet = pets.find((p) => p.id === selectedPetId);
@@ -31,9 +32,10 @@ const PetContextProvider = ({ data, children }: PetContextProviderProps) => {
     setSelectedPetId(id);
   }
 
-  function handleAddPet(newPet: Pet) {
-    const petWithId = { ...newPet, id: crypto.randomUUID() }; // Ensure unique ID
-    setPets((prevPets) => [...prevPets, petWithId]);
+  async function handleAddPet(newPet: Pet) {
+    // const petWithId = { ...newPet, id: crypto.randomUUID() }; // Ensure unique ID
+    // setPets((prevPets) => [...prevPets, petWithId]);
+   await AddPet(newPet)
   }
 
   function handleEditPet(updatedPet: Pet) {
