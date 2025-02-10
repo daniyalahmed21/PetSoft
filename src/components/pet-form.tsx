@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { usePetContext } from "@/lib/hooks";
 import { Pet } from "@/lib/types";
+import { AddPet } from "@/app/actions/actions";
 
 type PetFormData = Pet;
 
@@ -21,6 +22,7 @@ export default function PetForm({
   onFormSubmission,
 }: PetFormProps) {
   const { handleAddPet, selectedPet, handleEditPet } = usePetContext();
+  const [isLoading, setIsLoading] = useState(false); // Loading state
 
   const {
     register,
@@ -29,24 +31,34 @@ export default function PetForm({
     formState: { errors },
   } = useForm<PetFormData>();
 
-  function onSubmit(data: PetFormData) {
+  async function onSubmit(data: PetFormData) {
+    // Set loading state to true
+    setIsLoading(true);
+
     if (data.imageUrl === undefined) {
       data.imageUrl =
-        " https://bytegrad.com/course-assets/react-nextjs/pet-placeholder.png";
-    }
-    if (actionType === "edit") {
-      handleEditPet(data);
-    }
-    if (actionType === "add") {
-      handleAddPet(data);
+        "https://bytegrad.com/course-assets/react-nextjs/pet-placeholder.png";
     }
 
+    if (actionType === "add") {
+      await AddPet(data); // Assuming AddPet is a server action
+    }
+
+    // Reset form and callback
     reset();
     onFormSubmission();
+    setInterval(() => {
+      setIsLoading(false);
+    },5000)
+    // Set loading state back to false after submission
+    setIsLoading(false);
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col space-y-4">
+    <form
+      onSubmit={handleSubmit(onSubmit)} // Handle form submission with react-hook-form
+      className="flex flex-col space-y-4"
+    >
       <div>
         <Label htmlFor="name">Name</Label>
         <Input
@@ -114,8 +126,9 @@ export default function PetForm({
         )}
       </div>
 
-      <Button type="submit" className="mt-5 self-end">
-        {actionType === "add" ? "Add" : "Save"}
+      {/* Submit button */}
+      <Button type="submit" className="mt-5 self-end" disabled={isLoading}>
+        {isLoading ? "Submitting..." : actionType === "add" ? "Add" : "Save"}
       </Button>
     </form>
   );
