@@ -1,28 +1,12 @@
 "use client";
-import { usePetContext, useSearchContext } from "@/lib/hooks";
+import { usePetContext } from "@/lib/hooks";
 import Image from "next/image";
 import PetButton from "./pet-button";
-import { checkoutPet } from "@/app/actions/actions";
-import { toast } from "sonner";
+
 
 const PetDetails = () => {
-  const { selectedPet, selectedPetId, setSelectedPetId, setIsLoading } =
-    usePetContext();
+  const { selectedPet,isLoading ,handlePetCheckout} = usePetContext();
 
-  async function handlePetCheckout() {
-    if (!selectedPetId) {
-      toast.error("No pet selected!");
-      return;
-    }
-
-    const error = await checkoutPet(selectedPetId);
-    if (error) {
-      toast.error(error?.msg);
-      setIsLoading(false);
-      return;
-    }
-    setSelectedPetId(null);
-  }
   return (
     <section className="flex flex-col h-full w-full">
       {!selectedPet ? (
@@ -50,6 +34,7 @@ const PetDetails = () => {
             <div className="flex flex-col gap-2 md:flex-row ml-auto ">
               <PetButton actionType="edit">Edit</PetButton>
               <PetButton
+              disabled={isLoading}
                 actionType="checkout"
                 onClick={() => handlePetCheckout()}
               >
