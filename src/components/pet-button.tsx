@@ -14,7 +14,7 @@ import PetForm from "./pet-form";
 type PetButtonProps = {
   actionType: "add" | "checkout" | "edit";
   children: string;
-  onClick?: () => void; // for "checkout" actionType only, add event listener to handle it.
+  onClick?: () => void;
 };
 
 const PetButton = ({ actionType, children, onClick }: PetButtonProps) => {

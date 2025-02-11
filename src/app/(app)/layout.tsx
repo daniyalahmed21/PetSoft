@@ -5,23 +5,14 @@ import PetsContextProvider from "@/context/pets-context-provider";
 import SearchContextProvider from "@/context/search-context-provider";
 import { prisma } from "@/lib/db";
 import React from "react";
+import { Toaster } from "sonner";
 
 export default async function Layout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-
-  const data = await prisma.pet.findMany()
-  // let res = await fetch(
-  //   "https://bytegrad.com/course-assets/projects/petsoft/api/pets.com"
-  // );
-
-  // if (!res.ok) {
-  //   throw new Error(`Response status: ${res.status}`);
-  // }
-
-  // const data = await res.json();
+  const data = await prisma.pet.findMany();
   return (
     <>
       <BackgroundPattern />
@@ -30,7 +21,7 @@ export default async function Layout({
         <SearchContextProvider>
           <PetsContextProvider data={data}>{children}</PetsContextProvider>
         </SearchContextProvider>
-
+        <Toaster richColors position="top-right" />
         <AppFooter />
       </div>
     </>

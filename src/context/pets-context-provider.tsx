@@ -9,48 +9,30 @@ type TPetContext = {
   handleChangeSetSelectedPetId: (id: string) => void;
   selectedPet: Pet | undefined;
   numberOfPets: number;
-  handleAddPet: (newPet: Pet) => void;
-  handleEditPet: (updatedPet: Pet) => void;
-  handlePetCheckout: (id: string) => void;
+  setSelectedPetId: (id: string | null) => void;
+  isLoading: boolean;
+  setIsLoading: (isLoading: boolean) => void;
 };
 
 export const PetContext = createContext<TPetContext | null>(null);
 
 type PetContextProviderProps = {
-  data : Pet[];
+  data: Pet[];
   children: React.ReactNode;
 };
 
-const PetContextProvider = ({ data :pets, children }: PetContextProviderProps) => {
-  // const [pets, setPets] = useState<Pet[]>(data);
+const PetContextProvider = ({
+  data: pets,
+  children,
+}: PetContextProviderProps) => {
   const [selectedPetId, setSelectedPetId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const selectedPet = pets.find((p) => p.id === selectedPetId);
   const numberOfPets = pets.length;
 
   function handleChangeSetSelectedPetId(id: string) {
     setSelectedPetId(id);
-  }
-
-  async function handleAddPet(newPet: Pet) {
-    // const petWithId = { ...newPet, id: crypto.randomUUID() }; // Ensure unique ID
-    // setPets((prevPets) => [...prevPets, petWithId]);
-   await AddPet(newPet)
-  }
-
-  function handleEditPet(updatedPet: Pet) {
-    setPets((prevPets) =>
-      prevPets.map((pet) => (pet.id === selectedPetId ? { ...pet, ...updatedPet } : pet))
-    );
-  }
-  
-  function handlePetCheckout(id: string) {
-    setPets((prevPets) => prevPets.filter((pet) => pet.id !== id));
-
-    // Reset selectedPetId if the removed pet was selected
-    if (selectedPetId === id) {
-      setSelectedPetId(null);
-    }
   }
 
   return (
@@ -61,9 +43,9 @@ const PetContextProvider = ({ data :pets, children }: PetContextProviderProps) =
         handleChangeSetSelectedPetId,
         selectedPet,
         numberOfPets,
-        handleAddPet,
-        handlePetCheckout,
-        handleEditPet,
+        setSelectedPetId,
+        isLoading,
+        setIsLoading,
       }}
     >
       {children}
