@@ -8,12 +8,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { usePetContext } from "@/lib/hooks";
 import { Pet } from "@/lib/types";
-import { AddPet } from "@/app/actions/actions";
+import { AddPet, checkoutPet, editPet } from "@/app/actions/actions";
+import { toast } from "sonner";
 
 type PetFormData = Pet;
 
 type PetFormProps = {
-  actionType: "add" | "edit";
+  actionType: "add" | "edit" | "checkout";
   onFormSubmission: () => void;
 };
 
@@ -21,8 +22,13 @@ export default function PetForm({
   actionType,
   onFormSubmission,
 }: PetFormProps) {
-  const { handleAddPet, selectedPet, handleEditPet } = usePetContext();
-  const [isLoading, setIsLoading] = useState(false); // Loading state
+  const {
+    selectedPet,
+    selectedPetId,
+    setSelectedPetId,
+    isLoading,
+    setIsLoading,
+  } = usePetContext();
 
   const {
     register,
@@ -32,7 +38,6 @@ export default function PetForm({
   } = useForm<PetFormData>();
 
   async function onSubmit(data: PetFormData) {
-    // Set loading state to true
     setIsLoading(true);
 
     if (data.imageUrl === undefined) {
@@ -41,24 +46,50 @@ export default function PetForm({
     }
 
     if (actionType === "add") {
-      await AddPet(data); // Assuming AddPet is a server action
+      const error = await AddPet(data);
+      if (error) {
+        toast.error(error?.msg);
+        setIsLoading(false);
+
+        return;
+      }
     }
 
-    // Reset form and callback
+    if (actionType === "edit") {
+      if (!selectedPetId) {
+        toast.error("No pet selected!");
+        return;
+      }
+      const error = await editPet(selectedPetId, data);
+      if (error) {
+        toast.error(error?.msg);
+        setIsLoading(false);
+        return;
+      }
+    }
+
+    if (actionType === "checkout") {
+      if (!selectedPetId) {
+        toast.error("No pet selected!");
+        return;
+      }
+      const error = await checkoutPet(selectedPetId);
+      if (error) {
+        toast.error(error?.msg);
+        setIsLoading(false);
+
+        return;
+      }
+      setSelectedPetId(null);
+    }
+
     reset();
     onFormSubmission();
-    setInterval(() => {
-      setIsLoading(false);
-    },5000)
-    // Set loading state back to false after submission
     setIsLoading(false);
   }
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)} // Handle form submission with react-hook-form
-      className="flex flex-col space-y-4"
-    >
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col space-y-4">
       <div>
         <Label htmlFor="name">Name</Label>
         <Input

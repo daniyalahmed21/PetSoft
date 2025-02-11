@@ -2,10 +2,27 @@
 import { usePetContext, useSearchContext } from "@/lib/hooks";
 import Image from "next/image";
 import PetButton from "./pet-button";
+import { checkoutPet } from "@/app/actions/actions";
+import { toast } from "sonner";
 
 const PetDetails = () => {
-  const { selectedPet,handlePetCheckout } = usePetContext();
+  const { selectedPet, selectedPetId, setSelectedPetId, setIsLoading } =
+    usePetContext();
 
+  async function handlePetCheckout() {
+    if (!selectedPetId) {
+      toast.error("No pet selected!");
+      return;
+    }
+
+    const error = await checkoutPet(selectedPetId);
+    if (error) {
+      toast.error(error?.msg);
+      setIsLoading(false);
+      return;
+    }
+    setSelectedPetId(null);
+  }
   return (
     <section className="flex flex-col h-full w-full">
       {!selectedPet ? (
@@ -16,8 +33,10 @@ const PetDetails = () => {
         <>
           <div className="flex items-center bg-white px-8 py-5 border border-light">
             <Image
-             src={selectedPet?.imageUrl || "https://bytegrad.com/course-assets/react-nextjs/pet-placeholder.png"}
-
+              src={
+                selectedPet?.imageUrl ||
+                "https://bytegrad.com/course-assets/react-nextjs/pet-placeholder.png"
+              }
               alt="Selected pet image"
               height={75}
               width={75}
@@ -30,7 +49,12 @@ const PetDetails = () => {
 
             <div className="flex flex-col gap-2 md:flex-row ml-auto ">
               <PetButton actionType="edit">Edit</PetButton>
-              <PetButton actionType="checkout" onClick={()=>handlePetCheckout(selectedPet.id)}>Checkout</PetButton>
+              <PetButton
+                actionType="checkout"
+                onClick={() => handlePetCheckout()}
+              >
+                Checkout
+              </PetButton>
             </div>
           </div>
           <div className="flex justify-around py-10 px-5 text-center">
