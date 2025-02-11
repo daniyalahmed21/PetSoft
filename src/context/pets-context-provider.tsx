@@ -1,10 +1,11 @@
 "use client";
-import { AddPet } from "@/app/actions/actions";
+import { AddPet, checkoutPet, editPet } from "@/app/actions/actions";
 import { Pet } from "@/lib/types";
-import React, { createContext, useState } from "react";
+import React, { createContext, useOptimistic, useState } from "react";
+import { toast } from "sonner";
 
 type TPetContext = {
-  pets: Pet[];
+  optimisticPets: Pet[];
   selectedPetId: string | null;
   handleChangeSetSelectedPetId: (id: string) => void;
   selectedPet: Pet | undefined;
@@ -12,6 +13,9 @@ type TPetContext = {
   setSelectedPetId: (id: string | null) => void;
   isLoading: boolean;
   setIsLoading: (isLoading: boolean) => void;
+  handleAddPet: (pet: Pet) => Promise<void>;
+  handleEditPet: (pet: Pet) => Promise<void>;
+  handlePetCheckout: () => Promise<void>;
 };
 
 export const PetContext = createContext<TPetContext | null>(null);
@@ -21,24 +25,88 @@ type PetContextProviderProps = {
   children: React.ReactNode;
 };
 
-const PetContextProvider = ({
-  data: pets,
-  children,
-}: PetContextProviderProps) => {
+const PetContextProvider = ({ data: pets, children }: PetContextProviderProps) => {
   const [selectedPetId, setSelectedPetId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const selectedPet = pets.find((p) => p.id === selectedPetId);
-  const numberOfPets = pets.length;
+  // Optimistic update function
+  const [optimisticPets, setOptimisticPets] = useOptimistic(pets, (state, update: { type: "add" | "edit" | "delete"; pet?: Pet; id?: string }) => {
+    switch (update.type) {
+      case "add":
+        return update.pet ? [...state, update.pet] : state;
+      case "edit":
+        return state.map((pet) => (pet.id === update.pet?.id ? { ...pet, ...update.pet } : pet));
+      case "delete":
+        return state.filter((pet) => pet.id !== update.id);
+      default:
+        return state;
+    }
+  });
+
+  const selectedPet = optimisticPets.find((p) => p.id === selectedPetId);
+  const numberOfPets = optimisticPets.length;
 
   function handleChangeSetSelectedPetId(id: string) {
     setSelectedPetId(id);
   }
 
+  const handleAddPet = async (data: Pet) => {
+    setIsLoading(true);
+    setOptimisticPets({ type: "add", pet: data }); // Optimistic UI update
+
+    const error = await AddPet(data);
+    if (error) {
+      toast.error(error?.msg);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(false);
+  };
+
+  const handleEditPet = async (data: Pet) => {
+    if (!selectedPetId) {
+      toast.error("No pet selected!");
+      return;
+    }
+
+    setIsLoading(true);
+    setOptimisticPets({ type: "edit", pet: { ...data, id: selectedPetId } }); // Optimistic UI update
+
+    const error = await editPet(selectedPetId, data);
+    if (error) {
+      toast.error(error?.msg);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(false);
+  };
+
+  async function handlePetCheckout() {
+    if (!selectedPetId) {
+      toast.error("No pet selected!");
+      return;
+    }
+
+    setIsLoading(true);
+    setOptimisticPets({ type: "delete", id: selectedPetId }); // Optimistic UI update
+
+    const error = await checkoutPet(selectedPetId);
+    if (error) {
+      toast.error(error?.msg);
+      setIsLoading(false);
+      return;
+    }
+
+    setSelectedPetId(null);
+    setIsLoading(false);
+  }
+
   return (
     <PetContext.Provider
       value={{
-        pets,
+        optimisticPets,
         selectedPetId,
         handleChangeSetSelectedPetId,
         selectedPet,
@@ -46,6 +114,9 @@ const PetContextProvider = ({
         setSelectedPetId,
         isLoading,
         setIsLoading,
+        handleAddPet,
+        handleEditPet,
+        handlePetCheckout,
       }}
     >
       {children}

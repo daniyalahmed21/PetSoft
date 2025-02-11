@@ -4,14 +4,13 @@ import Image from "next/image";
 import PetPlaceholder from "../../public/pet-placeholder.png";
 import {usePetContext, useSearchContext}  from "@/lib/hooks";
 import { cn } from "@/lib/utils";
-import PetButton from "./pet-button";
 
 
 
 const PetList = () => {  
-  const {pets,selectedPetId,handleChangeSetSelectedPetId} = usePetContext()
+  const {optimisticPets,selectedPetId,handleChangeSetSelectedPetId} = usePetContext()
   const { searchQuery } = useSearchContext();
-  const filteredPets = pets.filter((pet)=>pet.name.toLowerCase().includes(searchQuery))
+  const filteredPets = optimisticPets.filter((pet)=>pet.name.toLowerCase().includes(searchQuery))
   return (
     <ul className="bg-white border-b border-light">
       {filteredPets.map((pet) => (

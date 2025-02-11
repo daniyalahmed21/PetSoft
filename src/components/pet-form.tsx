@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,8 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { usePetContext } from "@/lib/hooks";
 import { Pet } from "@/lib/types";
-import { AddPet, checkoutPet, editPet } from "@/app/actions/actions";
-import { toast } from "sonner";
+
 
 type PetFormData = Pet;
 
@@ -24,10 +23,10 @@ export default function PetForm({
 }: PetFormProps) {
   const {
     selectedPet,
-    selectedPetId,
-    setSelectedPetId,
     isLoading,
     setIsLoading,
+    handleAddPet,
+    handleEditPet
   } = usePetContext();
 
   const {
@@ -39,6 +38,7 @@ export default function PetForm({
 
   async function onSubmit(data: PetFormData) {
     setIsLoading(true);
+    onFormSubmission();
 
     if (data.imageUrl === undefined) {
       data.imageUrl =
@@ -46,45 +46,14 @@ export default function PetForm({
     }
 
     if (actionType === "add") {
-      const error = await AddPet(data);
-      if (error) {
-        toast.error(error?.msg);
-        setIsLoading(false);
-
-        return;
-      }
+      await handleAddPet(data);
     }
 
     if (actionType === "edit") {
-      if (!selectedPetId) {
-        toast.error("No pet selected!");
-        return;
-      }
-      const error = await editPet(selectedPetId, data);
-      if (error) {
-        toast.error(error?.msg);
-        setIsLoading(false);
-        return;
-      }
-    }
-
-    if (actionType === "checkout") {
-      if (!selectedPetId) {
-        toast.error("No pet selected!");
-        return;
-      }
-      const error = await checkoutPet(selectedPetId);
-      if (error) {
-        toast.error(error?.msg);
-        setIsLoading(false);
-
-        return;
-      }
-      setSelectedPetId(null);
+      await handleEditPet(data);
     }
 
     reset();
-    onFormSubmission();
     setIsLoading(false);
   }
 

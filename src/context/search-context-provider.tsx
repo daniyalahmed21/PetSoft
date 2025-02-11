@@ -4,26 +4,24 @@ import React, { createContext, useState } from "react";
 
 export const SearchContext = createContext<TSearchContext | null>(null);
 
-type SearchContextProviderProps={
-  children: React.ReactNode,
-}
+type SearchContextProviderProps = {
+  children: React.ReactNode;
+};
 
-type TSearchContext ={
-    searchQuery:string
-    handleChangeSetSearchQuery: (value:string) => void
-}
+type TSearchContext = {
+  searchQuery: string;
+  handleChangeSetSearchQuery: (value: string) => void;
+};
 
-const SearchContextProvider = ({  children }:SearchContextProviderProps) => {
+const SearchContextProvider = ({ children }: SearchContextProviderProps) => {
+  const [searchQuery, setSearchQuery] = useState("");
 
-    const [searchQuery,setSearchQuery] = useState("")
-
-
-  function handleChangeSetSearchQuery(value:string) {
-    setSearchQuery(value)
+  function handleChangeSetSearchQuery(value: string) {
+    setSearchQuery(value);
   }
 
   return (
-    <SearchContext.Provider value={{ searchQuery,handleChangeSetSearchQuery }}>
+    <SearchContext.Provider value={{ searchQuery, handleChangeSetSearchQuery }}>
       {children}
     </SearchContext.Provider>
   );
