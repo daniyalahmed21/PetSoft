@@ -22,12 +22,11 @@ const PetButton = ({
   actionType,
   children,
   onClick,
-  disabled,
 }: PetButtonProps) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   if (actionType === "checkout") {
     return (
-      <Button variant="default" onClick={onClick} disabled={disabled}>
+      <Button variant="default" onClick={onClick} >
         {children}
       </Button>
     );

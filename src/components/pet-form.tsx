@@ -2,133 +2,94 @@
 
 import React from "react";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { usePetContext } from "@/lib/hooks";
 import { Pet } from "@/lib/types";
+import { petFormSchema } from "@/lib/validation";
 
 
-type PetFormData = Pet;
+type PetFormData = Pet
 
 type PetFormProps = {
-  actionType: "add" | "edit" | "checkout";
+  actionType: "add" | "edit";
   onFormSubmission: () => void;
 };
 
-export default function PetForm({
-  actionType,
-  onFormSubmission,
-}: PetFormProps) {
-  const {
-    selectedPet,
-    isLoading,
-    setIsLoading,
-    handleAddPet,
-    handleEditPet
-  } = usePetContext();
+export default function PetForm({ actionType, onFormSubmission }: PetFormProps) {
+  const { selectedPet, handleAddPet, handleEditPet } = usePetContext();
 
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<PetFormData>();
+  } = useForm<PetFormData>({
+    resolver: zodResolver(petFormSchema),
+    defaultValues: {
+      name: selectedPet?.name || "",
+      ownerName: selectedPet?.ownerName || "",
+      age: selectedPet?.age || 0,
+      imageUrl: selectedPet?.imageUrl || "",
+      notes: selectedPet?.notes || "",
+    },
+  });
 
-  async function onSubmit(data: PetFormData) {
-    setIsLoading(true);
+  async function onSubmit(data: Pet) {
     onFormSubmission();
 
-    if (data.imageUrl === undefined) {
-      data.imageUrl =
-        "https://bytegrad.com/course-assets/react-nextjs/pet-placeholder.png";
-    }
+    // if (!data.imageUrl) {
+    //   data.imageUrl =
+    //     "https://bytegrad.com/course-assets/react-nextjs/pet-placeholder.png";
+    // }
 
     if (actionType === "add") {
       await handleAddPet(data);
-    }
-
-    if (actionType === "edit") {
+    } else if (actionType === "edit") {
       await handleEditPet(data);
     }
 
     reset();
-    setIsLoading(false);
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col space-y-4">
       <div>
         <Label htmlFor="name">Name</Label>
-        <Input
-          type="text"
-          id="name"
-          {...register("name", { required: "Name is required" })}
-          defaultValue={actionType === "edit" ? selectedPet?.name : ""}
-        />
-        {errors.name && (
-          <p className="text-red-500 text-sm">{errors.name.message}</p>
-        )}
+        <Input type="text" id="name" {...register("name")} />
+        {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
       </div>
 
       <div>
         <Label htmlFor="ownerName">Owner Name</Label>
-        <Input
-          type="text"
-          id="ownerName"
-          {...register("ownerName", { required: "Owner name is required" })}
-          defaultValue={actionType === "edit" ? selectedPet?.ownerName : ""}
-        />
-        {errors.ownerName && (
-          <p className="text-red-500 text-sm">{errors.ownerName.message}</p>
-        )}
+        <Input type="text" id="ownerName" {...register("ownerName")} />
+        {errors.ownerName && <p className="text-red-500 text-sm">{errors.ownerName.message}</p>}
       </div>
 
       <div>
         <Label htmlFor="age">Age</Label>
-        <Input
-          type="number"
-          id="age"
-          {...register("age", {
-            required: "Age is required",
-            valueAsNumber: true,
-          })}
-          defaultValue={actionType === "edit" ? selectedPet?.age : ""}
-        />
-        {errors.age && (
-          <p className="text-red-500 text-sm">{errors.age.message}</p>
-        )}
+        <Input type="number" id="age" {...register("age", { valueAsNumber: true })} />
+        {errors.age && <p className="text-red-500 text-sm">{errors.age.message}</p>}
       </div>
 
       <div>
         <Label htmlFor="imageUrl">Image URL (optional)</Label>
-        <Input
-          type="text"
-          id="imageUrl"
-          {...register("imageUrl")}
-          defaultValue={actionType === "edit" ? selectedPet?.imageUrl : ""}
-        />
-        {errors.imageUrl && (
-          <p className="text-red-500 text-sm">{errors.imageUrl.message}</p>
-        )}
+        <Input type="text" id="imageUrl" {...register("imageUrl")} />
+        {errors.imageUrl && <p className="text-red-500 text-sm">{errors.imageUrl.message}</p>}
       </div>
 
       <div>
         <Label htmlFor="notes">Notes</Label>
-        <Textarea
-          id="notes"
-          {...register("notes", { required: "Notes are required" })}
-          defaultValue={actionType === "edit" ? selectedPet?.notes : ""}
-        />
-        {errors.notes && (
-          <p className="text-red-500 text-sm">{errors.notes.message}</p>
-        )}
+        <Textarea id="notes" {...register("notes")} />
+        {errors.notes && <p className="text-red-500 text-sm">{errors.notes.message}</p>}
       </div>
 
-      {/* Submit button */}
-      <Button type="submit" className="mt-5 self-end" disabled={isLoading}>
-        {isLoading ? "Submitting..." : actionType === "add" ? "Add" : "Save"}
+      <Button type="submit" className="mt-5 self-end">
+        {actionType === "add" ? "Add" : "Save"}
       </Button>
     </form>
   );

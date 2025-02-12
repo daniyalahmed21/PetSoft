@@ -5,7 +5,7 @@ import PetButton from "./pet-button";
 
 
 const PetDetails = () => {
-  const { selectedPet,isLoading ,handlePetCheckout} = usePetContext();
+  const { selectedPet ,handlePetCheckout} = usePetContext();
 
   return (
     <section className="flex flex-col h-full w-full">
@@ -34,7 +34,6 @@ const PetDetails = () => {
             <div className="flex flex-col gap-2 md:flex-row ml-auto ">
               <PetButton actionType="edit">Edit</PetButton>
               <PetButton
-              disabled={isLoading}
                 actionType="checkout"
                 onClick={() => handlePetCheckout()}
               >
