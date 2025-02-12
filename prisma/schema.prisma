@@ -15,7 +15,7 @@ model Pet {
   id        String   @id @default(cuid())
   name      String
   ownerName String
-  imageUrl  String
+  imageUrl  String?
   age       Int
   notes     String
   updatedAt DateTime @updatedAt

@@ -11,8 +11,6 @@ type TPetContext = {
   selectedPet: Pet | undefined;
   numberOfPets: number;
   setSelectedPetId: (id: string | null) => void;
-  isLoading: boolean;
-  setIsLoading: (isLoading: boolean) => void;
   handleAddPet: (pet: Pet) => Promise<void>;
   handleEditPet: (pet: Pet) => Promise<void>;
   handlePetCheckout: () => Promise<void>;
@@ -27,7 +25,6 @@ type PetContextProviderProps = {
 
 const PetContextProvider = ({ data: pets, children }: PetContextProviderProps) => {
   const [selectedPetId, setSelectedPetId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   // Optimistic update function
   const [optimisticPets, setOptimisticPets] = useOptimistic(pets, (state, update: { type: "add" | "edit" | "delete"; pet?: Pet; id?: string }) => {
@@ -51,17 +48,15 @@ const PetContextProvider = ({ data: pets, children }: PetContextProviderProps) =
   }
 
   const handleAddPet = async (data: Pet) => {
-    setIsLoading(true);
+    // setIsLoading(true);
     setOptimisticPets({ type: "add", pet: data }); // Optimistic UI update
 
     const error = await AddPet(data);
     if (error) {
       toast.error(error?.msg);
-      setIsLoading(false);
       return;
     }
 
-    setIsLoading(false);
   };
 
   const handleEditPet = async (data: Pet) => {
@@ -70,17 +65,14 @@ const PetContextProvider = ({ data: pets, children }: PetContextProviderProps) =
       return;
     }
 
-    setIsLoading(true);
     setOptimisticPets({ type: "edit", pet: { ...data, id: selectedPetId } }); // Optimistic UI update
 
     const error = await editPet(selectedPetId, data);
     if (error) {
       toast.error(error?.msg);
-      setIsLoading(false);
       return;
     }
 
-    setIsLoading(false);
   };
 
   async function handlePetCheckout() {
@@ -89,18 +81,15 @@ const PetContextProvider = ({ data: pets, children }: PetContextProviderProps) =
       return;
     }
 
-    setIsLoading(true);
     setOptimisticPets({ type: "delete", id: selectedPetId }); // Optimistic UI update
 
     const error = await checkoutPet(selectedPetId);
     if (error) {
       toast.error(error?.msg);
-      setIsLoading(false);
       return;
     }
 
     setSelectedPetId(null);
-    setIsLoading(false);
   }
 
   return (
@@ -112,8 +101,6 @@ const PetContextProvider = ({ data: pets, children }: PetContextProviderProps) =
         selectedPet,
         numberOfPets,
         setSelectedPetId,
-        isLoading,
-        setIsLoading,
         handleAddPet,
         handleEditPet,
         handlePetCheckout,
