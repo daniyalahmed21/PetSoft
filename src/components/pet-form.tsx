@@ -2,7 +2,6 @@
 
 import React from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,9 +10,6 @@ import { Button } from "@/components/ui/button";
 import { usePetContext } from "@/lib/hooks";
 import { Pet } from "@/lib/types";
 import { petFormSchema } from "@/lib/validation";
-
-
-type PetFormData = Pet
 
 type PetFormProps = {
   actionType: "add" | "edit";
@@ -28,24 +24,13 @@ export default function PetForm({ actionType, onFormSubmission }: PetFormProps) 
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<PetFormData>({
+  } = useForm<Pet>({
     resolver: zodResolver(petFormSchema),
-    defaultValues: {
-      name: selectedPet?.name || "",
-      ownerName: selectedPet?.ownerName || "",
-      age: selectedPet?.age || 0,
-      imageUrl: selectedPet?.imageUrl || "",
-      notes: selectedPet?.notes || "",
-    },
+    defaultValues: actionType === "edit" ? selectedPet : {},
   });
 
   async function onSubmit(data: Pet) {
     onFormSubmission();
-
-    // if (!data.imageUrl) {
-    //   data.imageUrl =
-    //     "https://bytegrad.com/course-assets/react-nextjs/pet-placeholder.png";
-    // }
 
     if (actionType === "add") {
       await handleAddPet(data);

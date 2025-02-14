@@ -4,6 +4,14 @@ import { prisma } from "@/lib/db";
 import { Pet } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 import { petIdSchema, petFormSchema } from "@/lib/validation";
+import { signIn } from "@/lib/auth";
+
+
+export async function Login (formData:FormData){
+  const authData = Object.fromEntries(formData.entries())
+    await signIn("credentials", authData)
+}
+
 
 export async function AddPet(pet: Pet) {
   // Zod validation for pet data
@@ -39,7 +47,7 @@ export async function editPet(selectedPetId: unknown, updatedPet: unknown) {
       data: validatedPet.data,
     });
     revalidatePath("/app", "layout");
-    return null; // Return null for success
+    return null; 
   } catch (error) {
     return { msg: "Error editing pet" };
   }
