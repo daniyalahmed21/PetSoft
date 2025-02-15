@@ -1,4 +1,4 @@
-import { Login } from "@/app/actions/actions";
+import { Login, SignUp } from "@/app/actions/actions";
 import React from "react";
 
 type AuthformProps = {  
@@ -6,7 +6,7 @@ type AuthformProps = {
 }
 const AuthForm = ({type}:AuthformProps) => {
   return (
-    <form action={Login} className="w-full max-w-sm bg-white rounded-lg space-y-4">
+    <form action={ type==="login"? Login :SignUp} className="w-full max-w-sm bg-white rounded-lg space-y-4">
       {/* Email Field */}
       <div className="space-y-1">
         <label htmlFor="email" className="block text-gray-700 font-medium">
