@@ -2,8 +2,9 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { prisma } from "./db";
 import bcrypt from "bcryptjs";
+import { authSchema } from "./validation";
 
-export const { signOut,signIn, auth } = NextAuth({
+export const { handlers, signOut, signIn, auth } = NextAuth({
   pages: {
     signIn: "/login",
   },
@@ -11,7 +12,12 @@ export const { signOut,signIn, auth } = NextAuth({
   providers: [
     Credentials({
       async authorize(credentials) {
-        const { email, password } = credentials;
+        const validatedFormData = authSchema.safeParse(credentials);
+
+        if (!validatedFormData.success) {
+          return null
+        }
+        const { email, password } = validatedFormData.data;
 
         const user = await prisma.user.findUnique({ where: { email } });
 
@@ -46,16 +52,16 @@ export const { signOut,signIn, auth } = NextAuth({
       }
 
       if (isLoggedIn && !isTryingToAccessApp) {
-        return Response.redirect(new URL("/app/dashboard",request.nextUrl))
+        return Response.redirect(new URL("/app/dashboard", request.nextUrl));
       }
 
       if (!isTryingToAccessApp) {
         return true;
       }
 
-      return false
+      return false;
     },
-    
+
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;

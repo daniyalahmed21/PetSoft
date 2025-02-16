@@ -1,12 +1,17 @@
+'use client'
 import { Login, SignUp } from "@/app/actions/actions";
 import React from "react";
+import { Toaster } from "sonner";
 
-type AuthformProps = {  
-  type: "login" | "signup"; 
-}
-const AuthForm = ({type}:AuthformProps) => {
+type AuthFormProps = {
+  type: "login" | "signup";
+};
+const AuthForm = ({ type }: AuthFormProps) => {
   return (
-    <form action={ type==="login"? Login :SignUp} className="w-full max-w-sm bg-white rounded-lg space-y-4">
+    <form
+      action={type === "login" ? Login : SignUp}
+      className="w-full max-w-sm bg-white rounded-lg space-y-4"
+    >
       {/* Email Field */}
       <div className="space-y-1">
         <label htmlFor="email" className="block text-gray-700 font-medium">
@@ -30,7 +35,6 @@ const AuthForm = ({type}:AuthformProps) => {
           id="password"
           type="password"
           name="password"
-   
           className="w-full px-3 py-2 border border-gray-300 rounded-lg "
           placeholder="Enter your password"
         />
@@ -41,8 +45,11 @@ const AuthForm = ({type}:AuthformProps) => {
         type="submit"
         className="p-8 rounded-xl bg-black text-white font-medium py-2  hover:bg-zinc-700 transition duration-200 active:scale-95"
       >
-        {type==='login' ?'Login' :'Signup'}
+        {type === "login" ? "Login" : "Signup"}
       </button>
+    
+      <Toaster richColors position="top-right" />
+     
     </form>
   );
 };

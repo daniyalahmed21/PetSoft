@@ -19,5 +19,12 @@ export const petFormSchema = z
   })
   .transform((data) => ({
     ...data,
-    imageUrl: data.imageUrl || "https://bytegrad.com/course-assets/react-nextjs/pet-placeholder.png",
+    imageUrl:
+      data.imageUrl ||
+      "https://bytegrad.com/course-assets/react-nextjs/pet-placeholder.png",
   }));
+
+export const authSchema = z.object({
+  email: z.string().email(),
+  password: z.string(),
+});
