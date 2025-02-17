@@ -1,16 +1,24 @@
-'use client'
+"use client";
 import { Login, SignUp } from "@/app/actions/actions";
 import React from "react";
 import { Toaster } from "sonner";
+import AuthFormBtn from "./AuthFormBtn";
+import { useFormState } from "react-dom";
 
 type AuthFormProps = {
   type: "login" | "signup";
 };
+
 const AuthForm = ({ type }: AuthFormProps) => {
+  const [loginState, loginAction] = useFormState(Login, undefined);
+  const [signupState, signupAction] = useFormState(SignUp, undefined);
+
+  const errorMsg = type === "login" ? loginState?.message : signupState?.message;
+
   return (
     <form
-      action={type === "login" ? Login : SignUp}
-      className="w-full max-w-sm bg-white rounded-lg space-y-4"
+      action={type === "login" ? loginAction : signupAction}
+      className="w-full max-w-sm bg-white  space-y-4 "
     >
       {/* Email Field */}
       <div className="space-y-1">
@@ -21,7 +29,7 @@ const AuthForm = ({ type }: AuthFormProps) => {
           id="email"
           type="email"
           name="email"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg "
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           placeholder="Enter your email"
         />
       </div>
@@ -35,21 +43,21 @@ const AuthForm = ({ type }: AuthFormProps) => {
           id="password"
           type="password"
           name="password"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg "
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           placeholder="Enter your password"
         />
       </div>
+      {errorMsg && (
+        <p className="text-sm text-red-600 bg-red-100 border border-red-400 p-2 rounded-lg">
+          {errorMsg}
+        </p>
+      )}
+
 
       {/* Submit Button */}
-      <button
-        type="submit"
-        className="p-8 rounded-xl bg-black text-white font-medium py-2  hover:bg-zinc-700 transition duration-200 active:scale-95"
-      >
-        {type === "login" ? "Login" : "Signup"}
-      </button>
-    
-      <Toaster richColors position="top-right" />
-     
+      <AuthFormBtn type={type} />
+
+      
     </form>
   );
 };

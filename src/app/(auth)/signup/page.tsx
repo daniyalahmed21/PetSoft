@@ -11,7 +11,7 @@ function Signup() {
       <p className="text-sm mt-4 text-zinc-500">
         Already have an account?{" "}
         <Link className="text-medium " href="/login">
-          Sign up
+          Login
         </Link>
       </p>
     </main>
