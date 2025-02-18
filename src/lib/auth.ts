@@ -51,9 +51,17 @@ export const { handlers, signOut, signIn, auth } = NextAuth({
         return true;
       }
 
-      if (isLoggedIn && !isTryingToAccessApp) {
-        return Response.redirect(new URL("/app/dashboard", request.nextUrl));
+      if (isLoggedIn && !isTryingToAccessApp ) {
+        if (
+          request.nextUrl.pathname.includes("/login") ||
+          request.nextUrl.pathname.includes("/signup")
+        ) {
+          return Response.redirect(new URL("/payment", request.nextUrl));
+        }
+
+        return true;
       }
+
 
       if (!isTryingToAccessApp) {
         return true;
@@ -65,15 +73,16 @@ export const { handlers, signOut, signIn, auth } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.hasAccess = user.hasAccess;
       }
       return token;
     },
 
-    async session({ session, token }) {
-      if (token.id) {
-        session.user.id = token.id as string;
-      }
+    session: ({ session, token }) => {
+      session.user.id = token.userId;
+      session.user.hasAccess = token.hasAccess;
+
       return session;
     },
   },
-});
+})
