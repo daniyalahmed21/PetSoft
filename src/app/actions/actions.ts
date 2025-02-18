@@ -9,10 +9,31 @@ import { signOut } from "@/lib/auth";
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
 import { Prisma } from "@prisma/client";
-import { FormState } from "react-hook-form";
 import { AuthError } from "next-auth";
+import { checkAuth } from "@/lib/serverUtils";
 
-export async function Login(prevState: unknown ,formData: FormData) {
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+
+export async function stripeCheckoutSession() {
+  const session = await checkAuth();
+
+  const checkoutSession = await stripe.checkout.sessions.create({
+    customer_email: session.user?.email, // replace with actual customer email
+    line_items: [
+      {
+        price: "price_1QtZAwLRGJCPrWZ1OkSkNuKy",
+        quantity: 1,
+      },
+    ],
+    mode: "payment",
+    success_url: `${process.env.NEXT_PUBLIC_URL}/payment?success=true`,
+    cancel_url: `${process.env.NEXT_PUBLIC_URL}/payment?cancelled=true`,
+  });
+
+  redirect(checkoutSession.url);
+}
+
+export async function Login(prevState: unknown, formData: FormData) {
   if (!(formData instanceof FormData)) {
     return {
       message: "Invalid form data",
@@ -45,7 +66,7 @@ export async function LogOut() {
   await signOut({ redirectTo: "/" });
 }
 
-export async function SignUp(prevState: unknown ,formData: unknown) {
+export async function SignUp(prevState: unknown, formData: unknown) {
   if (!(formData instanceof FormData)) {
     return {
       message: "Invalid form data",
@@ -198,4 +219,4 @@ export async function checkoutPet(selectedPetId: unknown) {
   } catch (error) {
     return { msg: "Error deleting pet" };
   }
-} 
+}
