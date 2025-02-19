@@ -5,7 +5,6 @@ declare module "next-auth" {
     hasAccess: boolean;
     email: string;
   }
-
   interface Session {
     user: User & {
       id: string;
@@ -14,9 +13,9 @@ declare module "next-auth" {
 }
 
 declare module "@auth/core/jwt" {
-    interface JWT {
-      userId: string;
-      email: string;
-      hasAccess: boolean;
-    }
+  interface JWT {
+    userId: string;
+    email: string;
+    hasAccess: boolean;
   }
+}
