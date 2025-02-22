@@ -1,12 +1,11 @@
 "use client";
 
-
+import { createCheckoutSession } from "@/actions/actions";
+import H1 from "@/components/h1";
 import { Button } from "@/components/ui/button";
-import { useTransition } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import H1 from "@/components/H1";
-import { stripeCheckoutSession } from "@/app/actions/actions";
+import { useTransition } from "react";
 
 export default function Page({
   searchParams,
@@ -14,7 +13,7 @@ export default function Page({
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
   const [isPending, startTransition] = useTransition();
-  const { data: session, status, update } = useSession();
+  const { data: session, update, status } = useSession();
   const router = useRouter();
 
   return (
@@ -23,11 +22,11 @@ export default function Page({
 
       {searchParams.success && (
         <Button
-          disabled={status === "loading" || session?.user.hasAccess}
           onClick={async () => {
             await update(true);
             router.push("/app/dashboard");
           }}
+          disabled={status === "loading" || session?.user.hasAccess}
         >
           Access PetSoft
         </Button>
@@ -38,11 +37,11 @@ export default function Page({
           disabled={isPending}
           onClick={async () => {
             startTransition(async () => {
-              await stripeCheckoutSession();
+              await createCheckoutSession();
             });
           }}
         >
-          Buy lifetime access for $299
+          Buy lifetime access for $250.
         </Button>
       )}
 
@@ -51,7 +50,6 @@ export default function Page({
           Payment successful! You now have lifetime access to PetSoft.
         </p>
       )}
-
       {searchParams.cancelled && (
         <p className="text-sm text-red-700">
           Payment cancelled. You can try again.

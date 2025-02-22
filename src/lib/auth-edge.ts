@@ -1,45 +1,13 @@
-import NextAuth from "next-auth";
-import Credentials from "next-auth/providers/credentials";
-import { prisma } from "./db";
-import bcrypt from "bcryptjs";
-import { authSchema } from "./validation";
+import { NextAuthConfig } from "next-auth";
+import prisma from "./db";
 
-export const { handlers, signOut, signIn, auth } = NextAuth({
+export const nextAuthEdgeConfig = {
   pages: {
     signIn: "/login",
   },
-
-  providers: [
-    Credentials({
-      async authorize(credentials) {
-        const validatedFormData = authSchema.safeParse(credentials);
-
-        if (!validatedFormData.success) {
-          return null
-        }
-        const { email, password } = validatedFormData.data;
-
-        const user = await prisma.user.findUnique({ where: { email } });
-
-        if (!user) {
-          return null;
-        }
-
-        const passwordMatch = await bcrypt.compare(
-          password,
-          user.hashedPassword
-        );
-
-        if (!passwordMatch) {
-          return null;
-        }
-
-        return user;
-      },
-    }),
-  ],
   callbacks: {
     authorized: ({ auth, request }) => {
+      // runs on every request with middleware
       const isLoggedIn = Boolean(auth?.user);
       const isTryingToAccessApp = request.nextUrl.pathname.includes("/app");
 
@@ -81,21 +49,34 @@ export const { handlers, signOut, signIn, auth } = NextAuth({
 
       return false;
     },
-
-    async jwt({ token, user }) {
+    jwt: async ({ token, user, trigger }) => {
       if (user) {
-        token.id = user.id;
+        // on sign in
+        token.userId = user.id;
+        token.email = user.email!;
         token.hasAccess = user.hasAccess;
       }
+
+      if (trigger === "update") {
+        // on every request
+        const userFromDb = await prisma.user.findUnique({
+          where: {
+            email: token.email,
+          },
+        });
+        if (userFromDb) {
+          token.hasAccess = userFromDb.hasAccess;
+        }
+      }
+
       return token;
     },
-
-    async session({ session, token }) {
-      if (token.id) {
-        session.user.id = token.id as string;
+    session: ({ session, token }) => {
+      session.user.id = token.userId;
       session.user.hasAccess = token.hasAccess;
 
-      }
-      return session
-    }}
-})
+      return session;
+    },
+  },
+  providers: [],
+} satisfies NextAuthConfig;

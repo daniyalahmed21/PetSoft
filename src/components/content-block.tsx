@@ -1,12 +1,14 @@
 import { cn } from "@/lib/utils";
 
-const ContentBlock = ({
-  children,
-  className,
-}: {
+type ContentBlockProps = {
   children: React.ReactNode;
   className?: string;
-}) => {
+};
+
+export default function ContentBlock({
+  children,
+  className,
+}: ContentBlockProps) {
   return (
     <div
       className={cn(
@@ -17,6 +19,4 @@ const ContentBlock = ({
       {children}
     </div>
   );
-};
-
-export default ContentBlock;
+}

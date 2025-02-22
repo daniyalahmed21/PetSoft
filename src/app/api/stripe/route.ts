@@ -1,38 +1,51 @@
-import {prisma} from "@/lib/db";
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+import { NextResponse } from "next/server";
+import prisma from "@/lib/db";
+import Stripe from "stripe";
 
-export async function POST(request: Request) {
-  const body = await request.text();
-  const signature = request.headers.get("stripe-signature");
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2023-10-16",
+});
 
-  // verify webhook comes from Stripe
+export async function POST(req: Request) {
+  const rawBody = await req.arrayBuffer(); // Use arrayBuffer to preserve raw format
+  const body = Buffer.from(rawBody);
+  const signature = req.headers.get("stripe-signature")!;
+
   let event;
+
   try {
     event = stripe.webhooks.constructEvent(
       body,
       signature,
-      process.env.STRIPE_WEBHOOK_SECRET
+      process.env.STRIPE_WEBHOOK_SECRET!
     );
   } catch (error) {
-    console.log("Webhook verification failed", error);
-    return Response.json(null, { status: 400 });
+    console.error("Webhook verification failed:", error);
+    return NextResponse.json(
+      { error: "Webhook signature verification failed" },
+      { status: 400 }
+    );
   }
 
-  // fulfill order
-  switch (event.type) {
-    case "checkout.session.completed":
-      await prisma.user.update({
-        where: {
-          email: event.data.object.customer_email,
-        },
-        data: {
-          hasAccess: true,
-        },
+  // Handle the event
+  if (event.type === "checkout.session.completed") {
+    const session = event.data.object;
+    const email = session.customer_email;
+
+    console.log("🔍 Webhook received for event:", event.type);
+    console.log("📧 Customer Email from Stripe:", session.customer_email);
+    if (email) {
+      const updatedUser = await prisma.user.update({
+        where: { email },
+        data: { hasAccess: true },
       });
-      break;
-    default:
-      console.log(`Unhandled event type ${event.type}`);
+      
+      console.log("🔍 Prisma Update Result:", updatedUser);
+      
+    }
+  } else {
+    console.log(`Unhandled event type: ${event.type}`);
   }
 
-  // return 200 OK
-  return Response.json(null, { status: 200 });
+  return NextResponse.json({ received: true }, { status: 200 });
+}

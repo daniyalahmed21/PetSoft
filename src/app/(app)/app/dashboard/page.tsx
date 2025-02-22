@@ -6,29 +6,31 @@ import PetList from "@/components/pet-list";
 import SearchForm from "@/components/search-form";
 import Stats from "@/components/stats";
 
-const page = () => {
-
+export default async function Page() {
   return (
-    <main  >
-      <div className="flex justify-between items-center text-white py-8 px-4">
+    <main>
+      <div className="flex items-center justify-between text-white py-4">
         <Branding />
+
         <Stats />
       </div>
-      <div className="grid grid-rows-[45px_250px_500px] md:grid-cols-3 md:grid-rows-[45px_1fr] gap-2 md:gap-4 md:h-[400px] px-4">
+
+      <div className="grid md:grid-cols-3 md:grid-rows-[45px_1fr] grid-rows-[45px_300px_500px] gap-4 md:h-[450px]">
         <div className="md:row-start-1 md:row-span-1 md:col-start-1 md:col-span-1">
           <SearchForm />
         </div>
 
-        <div className="md:row-start-2 md:row-span-full md:col-start-1 md:col-span-1 relative">
+        <div className="relative md:row-start-2 md:row-span-full md:col-start-1 md:col-span-1">
           <ContentBlock>
             <PetList />
-            <PetButton actionType="add">
-            add
-          </PetButton>
+
+            <div className="absolute bottom-4 right-4">
+              <PetButton actionType="add" />
+            </div>
           </ContentBlock>
         </div>
 
-        <div className="md:row-start-1 md:row-span-full md:col-start-2 md:col-span-full mb-4 md:mb-0">
+        <div className="md:row-start-1 md:row-span-full md:col-start-2 md:col-span-full">
           <ContentBlock>
             <PetDetails />
           </ContentBlock>
@@ -36,6 +38,4 @@ const page = () => {
       </div>
     </main>
   );
-};
-
-export default page;
+}
