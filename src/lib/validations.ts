@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { DEFAULT_PET_IMAGE } from "./constants";
 
 export const petIdSchema = z.string().cuid();
 
@@ -19,12 +20,14 @@ export const petFormSchema = z
   })
   .transform((data) => ({
     ...data,
-    imageUrl:
-      data.imageUrl ||
-      "https://bytegrad.com/course-assets/react-nextjs/pet-placeholder.png",
+    imageUrl: data.imageUrl || DEFAULT_PET_IMAGE,
   }));
 
+export type TPetForm = z.infer<typeof petFormSchema>;
+
 export const authSchema = z.object({
-  email: z.string().email(),
-  password: z.string(),
+  email: z.string().email().max(100),
+  password: z.string().max(100),
 });
+
+export type TAuth = z.infer<typeof authSchema>;

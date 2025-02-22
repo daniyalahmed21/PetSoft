@@ -1,25 +1,27 @@
 "use server";
 
-import { signIn, signOut } from "@/lib/auth-no-edge";
+import { auth, signIn, signOut } from "@/lib/auth-no-edge";
 import prisma from "@/lib/db";
 import { sleep } from "@/lib/utils";
 import { authSchema, petFormSchema, petIdSchema } from "@/lib/validations";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
+import { redirect } from "next/navigation";
 import { checkAuth, getPetById } from "@/lib/server-utils";
 import { Prisma } from "@prisma/client";
 import { AuthError } from "next-auth";
-import { redirect } from "next/navigation";
 
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 // --- user actions ---
+
 export async function logIn(prevState: unknown, formData: unknown) {
   if (!(formData instanceof FormData)) {
     return {
       message: "Invalid form data.",
     };
   }
+
   try {
     await signIn("credentials", formData);
   } catch (error) {
@@ -32,17 +34,14 @@ export async function logIn(prevState: unknown, formData: unknown) {
         }
         default: {
           return {
-            message: "Could not sign in.",
+            message: "Error. Could not sign in.",
           };
         }
       }
     }
-    throw error; // nextjs redirects throw error, so we need to rethrow it
-  }
-}
 
-export async function logOut() {
-  await signOut({ redirectTo: "/" });
+    throw error; // nextjs redirects throws error, so we need to rethrow it
+  }
 }
 
 export async function signUp(prevState: unknown, formData: unknown) {
@@ -90,13 +89,15 @@ export async function signUp(prevState: unknown, formData: unknown) {
   await signIn("credentials", formData);
 }
 
+export async function logOut() {
+  await signOut({ redirectTo: "/" });
+}
+
 // --- pet actions ---
 
 export async function addPet(pet: unknown) {
-  // authentication check
   const session = await checkAuth();
 
-  // validation
   const validatedPet = petFormSchema.safeParse(pet);
   if (!validatedPet.success) {
     return {
@@ -104,7 +105,6 @@ export async function addPet(pet: unknown) {
     };
   }
 
-  // database mutation
   try {
     await prisma.pet.create({
       data: {
@@ -117,6 +117,7 @@ export async function addPet(pet: unknown) {
       },
     });
   } catch (error) {
+    console.log(error);
     return {
       message: "Could not add pet.",
     };
@@ -132,6 +133,7 @@ export async function editPet(petId: unknown, newPetData: unknown) {
   // validation
   const validatedPetId = petIdSchema.safeParse(petId);
   const validatedPet = petFormSchema.safeParse(newPetData);
+
   if (!validatedPetId.success || !validatedPet.success) {
     return {
       message: "Invalid pet data.",
@@ -140,13 +142,11 @@ export async function editPet(petId: unknown, newPetData: unknown) {
 
   // authorization check
   const pet = await getPetById(validatedPetId.data);
-
   if (!pet) {
     return {
-      message: "No pet found.",
+      message: "Pet not found.",
     };
   }
-
   if (pet.userId !== session.user.id) {
     return {
       message: "Not authorized.",
@@ -176,7 +176,6 @@ export async function deletePet(petId: unknown) {
 
   // validation
   const validatedPetId = petIdSchema.safeParse(petId);
-
   if (!validatedPetId.success) {
     return {
       message: "Invalid pet data.",
@@ -185,13 +184,11 @@ export async function deletePet(petId: unknown) {
 
   // authorization check
   const pet = await getPetById(validatedPetId.data);
-
   if (!pet) {
     return {
-      message: "No pet found.",
+      message: "Pet not found.",
     };
   }
-
   if (pet.userId !== session.user.id) {
     return {
       message: "Not authorized.",
@@ -220,12 +217,14 @@ export async function createCheckoutSession() {
   // authentication check
   const session = await checkAuth();
 
+  console.log(session.user.email);
+
   // create checkout session
   const checkoutSession = await stripe.checkout.sessions.create({
     customer_email: session.user.email,
     line_items: [
       {
-        price: "price_1QtZAwLRGJCPrWZ1OkSkNuKy",
+        price: "price_1OfpJ7FIW685mC8GCahpbCed",
         quantity: 1,
       },
     ],

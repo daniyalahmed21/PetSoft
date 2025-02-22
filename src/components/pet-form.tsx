@@ -1,81 +1,103 @@
 "use client";
 
-import React from "react";
+import { usePetContext } from "@/lib/hooks";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { Textarea } from "./ui/textarea";
+import PetFormBtn from "./pet-form-btn";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { usePetContext } from "@/lib/hooks";
-import { Pet } from "@/lib/types";
-import { petFormSchema } from "@/lib/validation";
+import { DEFAULT_PET_IMAGE } from "@/lib/constants";
+import { TPetForm, petFormSchema } from "@/lib/validations";
 
 type PetFormProps = {
   actionType: "add" | "edit";
   onFormSubmission: () => void;
 };
 
-export default function PetForm({ actionType, onFormSubmission }: PetFormProps) {
-  const { selectedPet, handleAddPet, handleEditPet } = usePetContext();
+export default function PetForm({
+  actionType,
+  onFormSubmission,
+}: PetFormProps) {
+  const { handleAddPet, handleEditPet, selectedPet } = usePetContext();
 
   const {
     register,
-    handleSubmit,
-    reset,
+    trigger,
+    getValues,
     formState: { errors },
-  } = useForm<Pet>({
+  } = useForm<TPetForm>({
     resolver: zodResolver(petFormSchema),
-    defaultValues: actionType === "edit" ? selectedPet : {},
+    defaultValues:
+      actionType === "edit"
+        ? {
+            name: selectedPet?.name,
+            ownerName: selectedPet?.ownerName,
+            imageUrl: selectedPet?.imageUrl,
+            age: selectedPet?.age,
+            notes: selectedPet?.notes,
+          }
+        : undefined,
   });
 
-  async function onSubmit(data: Pet) {
-    onFormSubmission();
-
-    if (actionType === "add") {
-      await handleAddPet(data);
-    } else if (actionType === "edit") {
-      await handleEditPet(data);
-    }
-
-    reset();
-  }
-
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col space-y-4">
-      <div>
-        <Label htmlFor="name">Name</Label>
-        <Input type="text" id="name" {...register("name")} />
-        {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
+    <form
+      action={async () => {
+        const result = await trigger();
+        if (!result) return;
+
+        onFormSubmission();
+
+        const petData = getValues();
+        petData.imageUrl = petData.imageUrl || DEFAULT_PET_IMAGE;
+
+        if (actionType === "add") {
+          await handleAddPet(petData);
+        } else if (actionType === "edit") {
+          await handleEditPet(selectedPet!.id, petData);
+        }
+      }}
+      className="flex flex-col"
+    >
+      <div className="space-y-3">
+        <div className="space-y-1">
+          <Label htmlFor="name">Name</Label>
+          <Input id="name" {...register("name")} />
+          {errors.name && <p className="text-red-500">{errors.name.message}</p>}
+        </div>
+
+        <div className="space-y-1">
+          <Label htmlFor="ownerName">Owner Name</Label>
+          <Input id="ownerName" {...register("ownerName")} />
+          {errors.ownerName && (
+            <p className="text-red-500">{errors.ownerName.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-1">
+          <Label htmlFor="imageUrl">Image Url</Label>
+          <Input id="imageUrl" {...register("imageUrl")} />
+          {errors.imageUrl && (
+            <p className="text-red-500">{errors.imageUrl.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-1">
+          <Label htmlFor="age">Age</Label>
+          <Input id="age" {...register("age")} />
+          {errors.age && <p className="text-red-500">{errors.age.message}</p>}
+        </div>
+
+        <div className="space-y-1">
+          <Label htmlFor="notes">Notes</Label>
+          <Textarea id="notes" {...register("notes")} />
+          {errors.notes && (
+            <p className="text-red-500">{errors.notes.message}</p>
+          )}
+        </div>
       </div>
 
-      <div>
-        <Label htmlFor="ownerName">Owner Name</Label>
-        <Input type="text" id="ownerName" {...register("ownerName")} />
-        {errors.ownerName && <p className="text-red-500 text-sm">{errors.ownerName.message}</p>}
-      </div>
-
-      <div>
-        <Label htmlFor="age">Age</Label>
-        <Input type="number" id="age" {...register("age", { valueAsNumber: true })} />
-        {errors.age && <p className="text-red-500 text-sm">{errors.age.message}</p>}
-      </div>
-
-      <div>
-        <Label htmlFor="imageUrl">Image URL (optional)</Label>
-        <Input type="text" id="imageUrl" {...register("imageUrl")} />
-        {errors.imageUrl && <p className="text-red-500 text-sm">{errors.imageUrl.message}</p>}
-      </div>
-
-      <div>
-        <Label htmlFor="notes">Notes</Label>
-        <Textarea id="notes" {...register("notes")} />
-        {errors.notes && <p className="text-red-500 text-sm">{errors.notes.message}</p>}
-      </div>
-
-      <Button type="submit" className="mt-5 self-end">
-        {actionType === "add" ? "Add" : "Save"}
-      </Button>
+      <PetFormBtn actionType={actionType} />
     </form>
   );
 }
